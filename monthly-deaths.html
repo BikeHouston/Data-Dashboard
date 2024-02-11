@@ -1,0 +1,80 @@
+<html>
+
+<head>
+    <!-- Load the AJAX API -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+
+        google.charts.setOnLoadCallback(drawMonthlyDeathsChart);
+
+        function drawMonthlyDeathsChart() {
+            var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1ApsOreWyo_kYewHUiiLt2VBiN--fL33IMMx9ifC5rmU/gviz/tq?sheet=bikehouston-data-2023fatalities');
+            query.setQuery('SELECT E, COUNT(A) GROUP BY E');
+            query.send(handleQueryResponse);
+        }
+
+        function handleQueryResponse(response) {
+            if (response.isError()) {
+                alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+
+            var data = response.getDataTable();
+
+            // Assuming the data comes in as Date (yyyy-MM-dd), aggregate by month.
+            // This section may need to be adapted based on the actual data format and desired aggregation logic.
+            var aggregatedData = google.visualization.data.group(
+                data,
+                [{
+                    column: 0,
+                    modifier: function (dateValue) {
+                        var date = new Date(dateValue);
+                        return new Date(date.getFullYear(), date.getMonth(), 1);
+                    },
+                    type: 'date',
+                    label: 'Month'
+                }],
+                [{
+                    column: 1,
+                    aggregation: google.visualization.data.sum,
+                    type: 'number',
+                    label: 'Deaths'
+                }]
+            );
+
+            var options = {
+                title: 'Monthly Deaths in 2023',
+                width: 600,
+                height: 400,
+                hAxis: {
+                    title: 'Month',
+                    format: 'MMM',
+                    viewWindow: {
+                        min: new Date(2023, 0, 1),
+                        max: new Date(2023, 11, 31)
+                    },
+                    gridlines: { count: 12 }
+                },
+                vAxis: {
+                    title: 'Number of Deaths'
+                },
+                legend: { position: 'none' },
+                animation: {
+                    duration: 1000,
+                    easing: 'out',
+                    startup: true
+                }
+            };
+
+            var chart = new google.visualization.ColumnChart(document.getElementById('monthly_deaths_chart_div'));
+            chart.draw(aggregatedData, options);
+        }
+    </script>
+</head>
+
+<body>
+    <div id="monthly_deaths_chart_div" style="width: 100%; height: 500px;"></div>
+</body>
+
+</html>

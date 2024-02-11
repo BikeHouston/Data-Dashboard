@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+
+        google.charts.setOnLoadCallback(drawPieChart);
+
+        function drawPieChart() {
+            var query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/1ApsOreWyo_kYewHUiiLt2VBiN--fL33IMMx9ifC5rmU/gviz/tq?sheet=bikehouston-data-citycouncil');
+            query.setQuery('SELECT A, B');
+            query.send(handlePieQueryResponse);
+        }
+
+        function handlePieQueryResponse(response) {
+            if (response.isError()) {
+                alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+
+            var data = response.getDataTable();
+            var options = {
+                title: 'Fatalities in each City Council District',
+                width: 400,
+                height: 600,
+                pieHole: 0.4, // This makes the pie chart a donut chart
+                // Removed the bars: 'horizontal' line because vertical is the default
+                // Add animation
+                animation: {
+                    duration: 1000,
+                    easing: 'out',
+                    startup: true // This option is required for animations on chart startup.
+                }
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('city-council-donut'));
+            chart.draw(data, options);
+        }
+    </script>
+    
+</head>
+
+<body>
+    <div id="city-council-donut" style="width: 100%; height: 100%;"></div>
+</body>
+
+</html>
